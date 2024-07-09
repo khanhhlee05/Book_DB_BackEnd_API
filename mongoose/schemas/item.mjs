@@ -10,7 +10,7 @@ const ItemSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.String,
         required: true
     },
-    Genre: [{
+    Genres: [{
         type: mongoose.Schema.Types.ObjectId,
         required: true,
         ref: 'Genre'
