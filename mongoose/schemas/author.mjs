@@ -1,38 +1,38 @@
 import mongoose from "mongoose";
 
 const AuthorSchema = new mongoose.Schema({
-    FirstName: {
+    firstName: {
         type: mongoose.Schema.Types.String,
         required: true
     },
 
-    LastName: {
+    lastName: {
         type: mongoose.Schema.Types.String,
         required: true
     },
 
-    DateOfBirth: {
+    dateOfBirth: {
         type: mongoose.Schema.Types.Date,
         required: true
     },
 
-    Nationality: {
+    nationality: {
         type: mongoose.Schema.Types.String,
         required: true
     },
 
-    Biography: {
+    biography: {
         type: mongoose.Schema.Types.String,
         required: true
     },
 
-    CreatedAt: {
+    createdAt: {
         type: mongoose.Schema.Types.Date,
         required: true,
         default: Date.now
     },
 
-    UpdatedAt: {
+    updatedAt: {
         type: mongoose.Schema.Types.Date,
         required: true,
         default: Date.now
@@ -40,7 +40,7 @@ const AuthorSchema = new mongoose.Schema({
 });
 
 AuthorSchema.pre('save', function (next) {
-    this.UpdatedAt = Date.now();
+    this.updatedAt = Date.now();
     next();
 });
 

@@ -1,49 +1,49 @@
 import mongoose from "mongoose";
 
 const ItemSchema = new mongoose.Schema({
-    AuthorID: {
+    authorId: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
         ref: 'Author'
     },
-    Title: {
+    title: {
         type: mongoose.Schema.Types.String,
         required: true
     },
-    Genres: [{
+    genres: [{
         type: mongoose.Schema.Types.ObjectId,
         required: true,
         ref: 'Genre'
     }],
-    DateImported: {
+    dateImported: {
         type: mongoose.Schema.Types.Date,
         required: true
     },
-    PublishedDate: {
+    publishedDate: {
         type: mongoose.Schema.Types.Date,
         required: true
     },
-    CopiesAvailable: {
+    copiesAvailable: {
         type: mongoose.Schema.Types.Number,
         required: true
     },
-    PublisherID: {
+    publisherId: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
         ref: 'Publisher'
     },
-    CreatedAt: {
+    createdAt: {
         type: mongoose.Schema.Types.Date,
         default: Date.now
     },
-    UpdatedAt: {
+    updatedAt: {
         type: mongoose.Schema.Types.Date,
         default: Date.now
     }
 });
 
 ItemSchema.pre('save', function (next) {
-    this.UpdatedAt = Date.now();
+    this.updatedAt = Date.now();
     next();
 });
 

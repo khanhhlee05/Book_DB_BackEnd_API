@@ -1,41 +1,41 @@
 import mongoose from "mongoose";
 
 const PublisherSchema = new mongoose.Schema({
-    Name: {
+    name: {
         type: mongoose.Schema.Types.String,
         required: true
     },
 
-    Address: {
-        Street: {
+    address: {
+        street: {
             type: mongoose.Schema.Types.String,
             required: true
         },
 
-        City: {
+        city: {
             type: mongoose.Schema.Types.String,
             required: true
         },
 
-        Zip: {
+        zip: {
             type: mongoose.Schema.Types.String,
             required: true
         }
     },
 
-    PhoneNumber: {
+    phoneNumber: {
         type: mongoose.Schema.Types.String,
         required: true,
         unique: true
     },
 
-    CreatedAt: {
+    createdAt: {
         type: mongoose.Schema.Types.Date,
         required: true,
         default: Date.now
     },
 
-    UpdatedAt: {
+    updatedAt: {
         type: mongoose.Schema.Types.Date,
         required: true,
         default: Date.now
@@ -43,7 +43,7 @@ const PublisherSchema = new mongoose.Schema({
 });
 
 PublisherSchema.pre('save', function (next) {
-    this.UpdatedAt = Date.now();
+    this.updatedAt = Date.now();
     next();
 });
 

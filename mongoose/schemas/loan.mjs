@@ -1,49 +1,49 @@
 import mongoose from "mongoose";
 
 const LoanSchema = new mongoose.Schema({
-    RentDate: {
+    rentDate: {
         type: mongoose.Schema.Types.Date,
         required: true
     },
 
-    RentDue: {
+    rentDue: {
         type: mongoose.Schema.Types.Date,
         required: true
     },
 
-    ActualReturnDate: {
+    actualReturnDate: {
         type: mongoose.Schema.Types.Date
     },
 
-    ItemID: {
+    itemId: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
         ref: 'Item'
     },
 
-    UserID: {
+    userId: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
         ref: 'User'
     },
 
-    Note: {
+    note: {
         type: mongoose.Schema.Types.String
     },
 
-    CreatedAt: {
+    createdAt: {
         type: mongoose.Schema.Types.Date,
         default: Date.now
     },
 
-    UpdatedAt: {
+    updatedAt: {
         type: mongoose.Schema.Types.Date,
         default: Date.now
     }
 });
 
 LoanSchema.pre('save', function (next) {
-    this.UpdatedAt = Date.now();
+    this.updatedAt = Date.now();
     next();
 });
 

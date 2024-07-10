@@ -1,19 +1,19 @@
 import mongoose from "mongoose";
 
 const GenreSchema = new mongoose.Schema({
-    Genre: {
+    genre: {
         type: mongoose.Schema.Types.String,
         required: true,
         unique: true
     },
 
-    CreatedAt: {
+    createdAt: {
         type: mongoose.Schema.Types.Date,
         required: true,
         default: Date.now
     },
 
-    UpdatedAt: {
+    updatedAt: {
         type: mongoose.Schema.Types.Date,
         required: true,
         default: Date.now
@@ -21,7 +21,7 @@ const GenreSchema = new mongoose.Schema({
 });
 
 GenreSchema.pre('save', function (next) {
-    this.UpdatedAt = Date.now();
+    this.updatedAt = Date.now();
     next();
 });
 

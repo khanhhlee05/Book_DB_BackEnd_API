@@ -1,84 +1,84 @@
 import mongoose from "mongoose";
 
 const UserSchema = new mongoose.Schema({
-    FirstName: {
+    firstName: {
         type: mongoose.Schema.Types.String,
         required: true
     },
 
-    LastName: {
+    lastName: {
         type: mongoose.Schema.Types.String,
         required: true
     },
 
-    Password: {
+    password: {
         type: mongoose.Schema.Types.String,
         required: true
     },
 
-    Email: {
+    email: {
         type: mongoose.Schema.Types.String,
         required: true,
         unique: true
     },
 
-    Membership: [
+    membership: [
         {
-            StartDate: {
+            startDate: {
                 type: mongoose.Schema.Types.Date,
                 required: true
             },
-            EndDate: {
+            endDate: {
                 type: mongoose.Schema.Types.Date,
                 required: true
             }
         }
     ],
 
-    PhoneNumber: {
+    phoneNumber: {
         type: mongoose.Schema.Types.String,
         required: true,
         unique: true
     },
 
-    Address: {
-        Street: {
+    address: {
+        street: {
             type: mongoose.Schema.Types.String,
             required: true
         },
-        City: {
+        city: {
             type: mongoose.Schema.Types.String,
             required: true
         },
-        ZipCode: {
+        zipCode: {
             type: mongoose.Schema.Types.String,
             required: true
         }
     },
 
-    Role: {
+    role: {
         type: mongoose.Schema.Types.String,
         enum: ['user', 'admin'],
         required: true
     },
 
-    LastLogin: {
+    lastLogin: {
         type: mongoose.Schema.Types.Date
     },
 
-    CreatedAt: {
+    createdAt: {
         type: mongoose.Schema.Types.Date,
         default: Date.now
     },
 
-    UpdatedAt: {
+    updatedAt: {
         type: mongoose.Schema.Types.Date,
         default: Date.now
     }
 });
 
 UserSchema.pre('save', function (next) {
-    this.UpdatedAt = Date.now();
+    this.updatedAt = Date.now();
     next();
 });
 
