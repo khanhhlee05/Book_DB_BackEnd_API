@@ -1,15 +1,17 @@
 import { Router } from "express"
-import User from "../mongoose/schemas/user.mjs"
+import { User } from "../mongoose/schemas/user.mjs"
 
 const router = Router()
 
 //create a new user
-router.post("/api/auth/signup", (request, response) => {
-    const {} = request.body
+router.post("/api/auth/signup",async (request, response) => {
+    const {firstName, lastName, password, email, phoneNumber, address, role} = request.body
     try {
-        User.create
+        const user = await User.create({ firstName, lastName, password, email, phoneNumber, address, role })
+        response.status(201).json(user)
     } catch (error) {
-        
+        console.log(error)
+        response.status(400).send(`Error: ${error}`)
     }
 })
 
