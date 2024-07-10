@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 import validator from "validator";
+import bcrypt from "bcryptjs"
+
 
 const UserSchema = new mongoose.Schema({
     firstName: {
@@ -108,7 +110,21 @@ const UserSchema = new mongoose.Schema({
 
 UserSchema.pre('save', function (next) {
     this.updatedAt = Date.now();
+    const salt = bcrypt.genSaltSync()
+    this.password = bcrypt.hashSync(this.password, salt)
     next();
-});
+}); 
+
+UserSchema.statics.login = async function (email, password){
+    const user = await this.findOne({email})
+    if (user){
+        const auth = await bcrypt.compare(password, user.password)
+        if (auth) {
+            return user;
+        }
+        throw Error("Incorrect Password")
+    }
+    throw Error("Incorrect Email")
+}
 
 export const User = mongoose.model("User", UserSchema);

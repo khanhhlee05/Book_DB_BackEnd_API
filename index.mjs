@@ -3,12 +3,16 @@ import express from "express"
 import mongoose from "mongoose"
 import { Publisher } from "./mongoose/schemas/publisher.mjs"
 import routes from "./routes/index.mjs"
+import cookieParser from "cookie-parser"
+
 
 const app = express()
 const PORT = process.env.PORT || 3000
 
 app.use(bodyParser.json())
 app.use(routes)
+app.use(cookieParser())
+
 
 //Connect to DB
 mongoose
@@ -16,8 +20,6 @@ mongoose
     .then(() => {console.log("Connected to DB")})
     .catch((err) => {console.log(`Error: ${err}`)})
 
-
-    // GET response Helloword
 
 
 //Run the server
