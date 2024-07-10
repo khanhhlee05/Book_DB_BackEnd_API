@@ -35,7 +35,7 @@ router.post("/api/auth/login", async (request, response) => {
         const user = await User.login(email, password)
         const token = createToken(user._id, user.email, user.role) //--> assign the access token
         response.cookie("jwt",token, {httpOnly: true, maxAge: maxAge * 1000}) //-->assign the token to a cookie
-        response.status(200).json({user : user._id})
+        response.status(200).json({user : user._id, token})
         
     } catch (error) {
         response.status(401).send(error.message)
