@@ -9,10 +9,10 @@ import cookieParser from "cookie-parser"
 const app = express()
 const PORT = process.env.PORT || 3000
 
+
+app.use(cookieParser()) //always put this first // order matters
 app.use(bodyParser.json())
 app.use(routes)
-app.use(cookieParser())
-
 
 //Connect to DB
 mongoose

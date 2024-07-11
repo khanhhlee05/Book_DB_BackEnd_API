@@ -44,7 +44,9 @@ router.post("/api/auth/login", async (request, response) => {
 
 
 router.get("/api/auth/logout", (request, response) => {
-
+    response.cookie("jwt", "", { maxAge: 1 })
+    response.redirect("/api/auth/login")
+    console.log("Logged out")
 })
 
 export default router
