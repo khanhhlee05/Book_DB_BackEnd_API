@@ -5,6 +5,14 @@ import jwt from "jsonwebtoken"
 import bcrypt from "bcryptjs"
 
 
+const userFieldsWhiteList = {
+  "firstName": "",
+  "lastName": "",
+  "password": "",
+  "email": "",
+  "phoneNumber": "",
+  "address": ""
+}
 
 const router = Router()
 
@@ -25,14 +33,15 @@ router.patch("/api/me"
   , async (request, response) => {
     const userToken = request.token
     const {body} = request
-    const {firstName, lastName, password, phoneNumber, address} = body
 
   const user = await User.findById(userToken.id)
 
-  
+
   Object.entries(body).forEach(([key, value]) => {
-    if (value){
+    if (value && key in userFieldsWhiteList){
       user[key] = value
+    } else {
+      response.status(401).send(`You are not allowed update ${key}`)
     }
   })
 

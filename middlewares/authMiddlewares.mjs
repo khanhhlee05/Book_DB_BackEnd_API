@@ -1,8 +1,5 @@
 import jwt from "jsonwebtoken"
-/* import { promisify } from 'util';
 
-const verifyToken = promisify(jwt.verify);
- */
 
 //grab the token and verify func
 export const requireAuth =  (request, response, next) => {
@@ -28,12 +25,4 @@ export const requireAuth =  (request, response, next) => {
 
 
 
-   /*  if (token){
-       try {
-        const decodedToken = await verifyToken(token, "my ultimate secret");
-        request.token = decodedToken;
-        next();
-       } catch (error) {
-        console.log(error.message)
-        response.sendStatus(400)
-       }  */
+ 
