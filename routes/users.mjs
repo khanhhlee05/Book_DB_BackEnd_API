@@ -21,9 +21,9 @@ router.get("/api/me", requireAuth, async (request, response) => {
     const userToken = request.token
     try {
         const user = await User.findById(userToken.id)
-        response.status(200).send(user)
+        return response.status(200).send(user)
     } catch (error) {
-        response.sendStatus(400)
+        return response.sendStatus(400)
     }
 })
 
@@ -41,17 +41,17 @@ router.patch("/api/me"
     if (value && key in userFieldsWhiteList){
       user[key] = value
     } else {
-      response.status(401).send(`You are not allowed update ${key}`)
+      return response.status(400).send(`You are not allowed update ${key}`)
     }
   })
 
   
   try {
     const updatedUser = await user.save()
-    response.status(201).send(updatedUser)
+    return response.status(201).send(updatedUser)
   } catch (error) {
     console.log(error)
-    response.sendStatus(400)
+    return response.sendStatus(400)
     
   }
 
