@@ -33,7 +33,7 @@ router.patch("/api/me"
   , async (request, response) => {
     const userToken = request.token
     const {body} = request
-
+  let isError = []
   const user = await User.findById(userToken.id)
 
 
@@ -41,11 +41,14 @@ router.patch("/api/me"
     if (value && key in userFieldsWhiteList){
       user[key] = value
     } else {
-      return response.status(400).send(`You are not allowed update ${key}`)
+      isError.push(key)
     }
   })
-
   
+if (isError.length >= 1){
+  return response.status(400).send(`You are not allowed update "${isError}"`)  
+}
+  console.log("5")
   try {
     const updatedUser = await user.save()
     return response.status(201).send(updatedUser)
