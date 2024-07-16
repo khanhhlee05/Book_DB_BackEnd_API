@@ -9,41 +9,27 @@ import { Publisher } from "../mongoose/schemas/publisher.mjs"
 import bodyParser from "body-parser"
 
 
+
 const router = Router()
 
-//add new genre
-router.post("/api/genres", adminAuth, async (request, response) => {
-    const {genre} = request.body
+//add new author
+router.post("/api/authors", adminAuth, async (request, response) => {
+    const {firstName, lastName, dateOfBirth, nationality, biography} = request.body
     try {
-        const myGenre = await Genre.create({genre})
-        return response.status(201).send(myGenre)
+        const myAuthor = await Author.create({firstName, lastName, dateOfBirth, nationality, biography})
+        return response.status(201).send(myAuthor)
     } catch (error){
         return response.status(400).send(error.message)
     }
 })
 
-//delete a genre
-router.delete("/api/genres", adminAuth, async (request, response) => {
+//get detail of an author
+router.get("/api/authors/detail", adminAuth, async (request, response) => {
     const {_id} = request.body
     try {
-        const deletedGenre = await Genre.findByIdAndDelete(_id)
-        if (deletedGenre){
-            return response.status(201).send(`Deleted genre: ${deletedGenre}`)
-        } else {
-            return response.status(400).send(`Unable to delete: Object might not exist`)
-        }
-    } catch (error){
-        return response.status(400).send(error.message)
-    }
-})
-
-//get detail of an genre
-router.get("/api/genres/detail", adminAuth, async (request, response) => {
-    const {_id} = request.body
-    try {
-        const queriedGenre = await Genre.findById(_id)
-        if (queriedGenre){
-            return response.status(201).send(queriedGenre)
+        const queriedAuthor = await Author.findById(_id)
+        if (queriedAuthor){
+            return response.status(201).send(queriedAuthor)
         } else {
             return response.status(400).send(`Unable to find: Object might not exist`)
         }
@@ -52,12 +38,27 @@ router.get("/api/genres/detail", adminAuth, async (request, response) => {
     }
 } )
 
-//list genre
-router.get("/api/genres/list", adminAuth, async (request, response) => {
+//delete an author
+router.delete("/api/authors", adminAuth, async (request, response) => {
+    const {_id} = request.body
     try {
-        const genreList = await Genre.find().sort({ createdAt : -1 })
-        if (genreList.length > 0){
-            return response.status(201).send(genreList)
+        const deletedAuthor = await Author.findByIdAndDelete(_id)
+        if (deletedAuthor){
+            return response.status(201).send(`Deleted author: ${deletedAuthor}`)
+        } else {
+            return response.status(400).send(`Unable to delete: Object might not exist`)
+        }
+    } catch (error){
+        return response.status(400).send(error.message)
+    }
+})
+
+//list authors
+router.get("/api/authors/list", adminAuth, async (request, response) => {
+    try {
+        const authorList = await Author.find().sort({ dateOfBirth : -1 })
+        if (authorList.length > 0){
+            return response.status(201).send(authorList)
         } else {
             return response.send("The list is empty")
         }
@@ -66,19 +67,19 @@ router.get("/api/genres/list", adminAuth, async (request, response) => {
     }
 }) 
 
-
-//update genre
-router.patch("/api/genres", adminAuth, async (request, response) => {
+//update author
+router.patch("/api/authors", adminAuth, async (request, response) => {
     let isError = []
     const {_id} = request.body
     if (!_id){
         return response.status(400).send(`id is missing`)
     }
-    const myGenre = await Genre.findById(_id)
+
+    const myAuthor = await Author.findById(_id)
 
     Object.entries(request.body).forEach(([key, value]) => {
         if (value){
-          myGenre[key] = value
+          myAuthor[key] = value
         } else {
           isError.push(key)
         }
@@ -89,14 +90,15 @@ router.patch("/api/genres", adminAuth, async (request, response) => {
       }
         
     try {
-        const updatedGenre = await myGenre.save()
-        return response.status(201).send(updatedGenre)
+        const updatedAuthor = await myAuthor.save()
+        return response.status(201).send(updatedAuthor)
         }
     catch (error) {  
         console.log(error)
         return response.sendStatus(400)
         }
 })
+
 
 
 export default router
