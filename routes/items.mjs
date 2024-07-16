@@ -15,7 +15,7 @@ const router = Router()
 
 
 //add new book
-router.post("/api/items/add", adminAuth, async (request, response) => {
+router.post("/api/items", adminAuth, async (request, response) => {
     const {authorId, title, genres, dateImported, publishedDate, copiesAvailable, publisherId} = request.body
     try {
         const item = await Item.create({authorId, title, genres, dateImported, publishedDate, copiesAvailable, publisherId})
@@ -27,7 +27,7 @@ router.post("/api/items/add", adminAuth, async (request, response) => {
 
 
 //delete a book from db
-router.delete("/api/items/delete", adminAuth, async (request, response) => {
+router.delete("/api/items", adminAuth, async (request, response) => {
     const {_id} = request.body
     try {
         const deletedItem = await Item.findByIdAndDelete(_id)
@@ -41,6 +41,8 @@ router.delete("/api/items/delete", adminAuth, async (request, response) => {
     }
 })
 
+
+//get detail of an item
 router.get("/api/items/detail", requireAuth, async (request, response) => {
     const {_id} = request.body
     try {
@@ -55,5 +57,18 @@ router.get("/api/items/detail", requireAuth, async (request, response) => {
     }
 } )
 
+//list books
+router.get("/api/items/list", requireAuth, async (request, response) => {
+    try {
+        const bookList = await Item.find().sort({ publishedDate : -1 })
+        if (bookList.length > 0){
+            return response.status(201).send(bookList)
+        } else {
+            return response.send("The list is empty")
+        }
+    } catch (error) {
+        return response.status(400).send(error.message)
+    }
+}) 
 
 export default router
