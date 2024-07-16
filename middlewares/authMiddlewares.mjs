@@ -39,7 +39,9 @@ export const adminAuth = (request, response, next) => {
                     }
                 }
             }) 
-    }
+    } else {
+        return response.status(400).json({ error: 'No token provided' }); // Send JSON response with error message
+     }
 }
 
 

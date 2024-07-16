@@ -19,7 +19,7 @@ router.post("/api/items", adminAuth, async (request, response) => {
     const {authorId, title, genres, dateImported, publishedDate, copiesAvailable, publisherId} = request.body
     try {
         const item = await Item.create({authorId, title, genres, dateImported, publishedDate, copiesAvailable, publisherId})
-        return response.status(201).json({item : item._id})
+        return response.status(201).send(item)
     } catch (error) {
         return response.status(400).send(error.message)
     }

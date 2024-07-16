@@ -47,7 +47,7 @@ router.patch("/api/me"
 if (isError.length >= 1){
   return response.status(400).send(`You are not allowed update "${isError}"`)  
 }
-  console.log("5")
+  
   try {
     const updatedUser = await user.save()
     return response.status(201).send(updatedUser)
