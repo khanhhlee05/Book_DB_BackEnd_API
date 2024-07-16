@@ -1,8 +1,7 @@
-import { response, Router } from "express"
+import { Router } from "express"
 import { requireAuth } from "../middlewares/authMiddlewares.mjs"
 import { User } from "../mongoose/schemas/user.mjs"
-import jwt from "jsonwebtoken"
-import bcrypt from "bcryptjs"
+
 
 
 const userFieldsWhiteList = {
@@ -44,7 +43,7 @@ router.patch("/api/me"
       isError.push(key)
     }
   })
-  
+
 if (isError.length >= 1){
   return response.status(400).send(`You are not allowed update "${isError}"`)  
 }

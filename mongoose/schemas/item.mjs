@@ -15,6 +15,7 @@ const ItemSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.String,
         required: [true, 'Title is required'],
         trim: true,
+        unique: true,
         minlength: [1, 'Title must be at least 1 character long'],
         maxlength: [255, 'Title must be at most 255 characters long']
     },
@@ -30,7 +31,6 @@ const ItemSchema = new mongoose.Schema({
     dateImported: {
         type: mongoose.Schema.Types.Date,
         required: [true, 'Date imported is required'],
-        default: Date.now,
         validate: {
             validator: (value) => validator.isDate(value),
             message: 'Date imported must be a valid date'
@@ -73,4 +73,4 @@ ItemSchema.pre('save', function (next) {
     next();
 });
 
-export default mongoose.model('Item', ItemSchema);
+export const Item = mongoose.model('Item', ItemSchema);

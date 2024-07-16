@@ -13,8 +13,7 @@ export const requireAuth =  (request, response, next) => {
                 console.log(error.message);
                 return response.status(400).json({ error: 'Invalid token' }); // Send JSON response with error message
             } else {
-                request.token = decodedToken;
-                
+                request.token = decodedToken;      
                 next();
             }
         });
@@ -22,6 +21,28 @@ export const requireAuth =  (request, response, next) => {
        return response.status(400).json({ error: 'No token provided' }); // Send JSON response with error message
     }
 } 
+
+export const adminAuth = (request, response, next) => {
+    const token = request.cookies.jwt
+
+    if (token){
+        jwt.verify(token, "my ultimate secret", (error, decodedToken) => {
+            if (error){
+                console.log(error.message)
+                return response.status(400).json({error: "Invalid token"})} 
+                else {
+                    if (decodedToken.role !== "admin"){
+                        return response.status(403).json({error: "FORBIDDEN"})
+                    } else {
+                        request.token = decodedToken;
+                        next()
+                    }
+                }
+            }) 
+    }
+}
+
+
 
 
 
