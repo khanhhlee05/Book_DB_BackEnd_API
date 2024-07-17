@@ -14,9 +14,9 @@ const router = Router()
 
 //add new publisher
 router.post("/api/publishers", adminAuth, async (request, response) => {
-    const {name, address, phoneNumber} = request.body
-
+    
     try {
+        const {name, address, phoneNumber} = request.body
         const myPublisher = await Publisher.create({name, address, phoneNumber})
         return response.status(201).send(myPublisher)
     } catch (error) {
@@ -26,9 +26,12 @@ router.post("/api/publishers", adminAuth, async (request, response) => {
 
 
 //delete a publisher
-router.delete("/api/publishers", adminAuth, async (request, response) => {
-    const {_id} = request.body
+router.delete("/api/publishers/:_id", adminAuth, async (request, response) => {
     try {
+        const {_id} = request.params
+        if (!mongoose.Types.ObjectId.isValid(_id)) {
+            return response.status(400).send({ message: 'Invalid ID format' });
+            }
         const deletedPublisher = await Publisher.findByIdAndDelete(_id)
         if (deletedPublisher){
             return response.status(201).send(`Deleted publisher: ${deletedPublisher}`)
@@ -42,15 +45,21 @@ router.delete("/api/publishers", adminAuth, async (request, response) => {
 
 
 //get detail of an publisher
-router.get("/api/publishers/detail", adminAuth, async (request, response) => {
-    const {_id} = request.body
+router.get("/api/publishers/:_id", adminAuth, async (request, response) => {
+    
     try {
+        const {_id} = request.params
+        if (!mongoose.Types.ObjectId.isValid(_id)) {
+            return response.status(400).send({ message: 'Invalid ID format' });
+            }
+
         const queriedPublisher = await Publisher.findById(_id)
         if (queriedPublisher){
             return response.status(201).send(queriedPublisher)
         } else {
             return response.status(400).send(`Unable to find: Object might not exist`)
         }
+
     } catch (error){
         return response.status(400).send(error.message)
     }
@@ -58,14 +67,12 @@ router.get("/api/publishers/detail", adminAuth, async (request, response) => {
 
 
 //list publisher
-router.get("/api/publishers/list", adminAuth, async (request, response) => {
+router.get("/api/publishers", adminAuth, async (request, response) => {
     try {
         const publisherList = await Publisher.find().sort({ createdAt : -1 })
-        if (publisherList.length > 0){
-            return response.status(201).send(publisherList)
-        } else {
-            return response.send("The list is empty")
-        }
+       
+        return response.status(201).send(publisherList)
+        
     } catch (error) {
         return response.status(400).send(error.message)
     }
@@ -73,7 +80,7 @@ router.get("/api/publishers/list", adminAuth, async (request, response) => {
 
 
 //update publisher
-router.patch("/api/publishers/:id", adminAuth, async (request, response) => { // //note .params.id
+router.patch("/api/publishers/:_id", adminAuth, async (request, response) => { // //note .params.id
     
     try{
     
@@ -92,13 +99,13 @@ router.patch("/api/publishers/:id", adminAuth, async (request, response) => { //
           myPublisher[key] = value
         } 
       })
-         
+
     const updatedPublisher = await myPublisher.save()
     return response.status(201).send(updatedPublisher)
 
     } catch (error) {  
             
-            return response.sendStatus(400)
+            return response.status(400).send(error.message)
             }
 })
 

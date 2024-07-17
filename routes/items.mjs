@@ -87,11 +87,9 @@ router.get("/api/items/:_id", requireAuth, async (request, response) => {
 router.get("/api/items", requireAuth, async (request, response) => {
     try {
         const bookList = await Item.find().sort({ publishedDate : -1 })
-        if (bookList.length > 0){
-            return response.status(201).send(bookList)
-        } else {
-            return response.send("The list is empty") //return empty list
-        }
+        
+        return response.status(201).send(bookList)
+        
     } catch (error) {
         return response.status(400).send(error.message)
     }
