@@ -17,8 +17,9 @@ const router = Router()
 
 
 router.get("/api/me", requireAuth, async (request, response) => {
-    const userToken = request.token
+    
     try {
+      const userToken = request.token
         const user = await User.findById(userToken.id)
         return response.status(200).send(user)
     } catch (error) {
@@ -30,6 +31,8 @@ router.get("/api/me", requireAuth, async (request, response) => {
 router.patch("/api/me"
   , requireAuth
   , async (request, response) => {
+
+    try{
     const userToken = request.token
     const {body} = request
   let isError = []
@@ -48,9 +51,10 @@ if (isError.length >= 1){
   return response.status(400).send(`You are not allowed update "${isError}"`)  
 }
   
-  try {
+
     const updatedUser = await user.save()
     return response.status(201).send(updatedUser)
+
   } catch (error) {
     console.log(error)
     return response.sendStatus(400)
@@ -60,9 +64,6 @@ if (isError.length >= 1){
 
 })
 
-router.get("/", requireAuth, (request, response) => {
-  response.sendStatus(200)
-})
 
     
 
