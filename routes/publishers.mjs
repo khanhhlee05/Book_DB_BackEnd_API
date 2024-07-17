@@ -7,6 +7,7 @@ import { Author } from "../mongoose/schemas/author.mjs"
 import { Genre } from "../mongoose/schemas/genre.mjs"
 import { Publisher } from "../mongoose/schemas/publisher.mjs"
 import bodyParser from "body-parser"
+import mongoose from "mongoose"
 
 
 const router = Router()
@@ -72,35 +73,33 @@ router.get("/api/publishers/list", adminAuth, async (request, response) => {
 
 
 //update publisher
-router.patch("/api/publishers", adminAuth, async (request, response) => {
-    let isError = []
-    const {_id} = request.body
-    if (!_id){
-        return response.status(400).send(`id is missing`)
+router.patch("/api/publishers/:id", adminAuth, async (request, response) => { // //note .params.id
+    
+    try{
+    
+    const {_id} = request.params
+    if (!mongoose.Types.ObjectId.isValid(_id)) {
+        return response.status(400).send({ message: 'Invalid ID format' });
+        }
+    
+    const myPublisher = await Publisher.findById(_id) //check if exist
+    if (!myPublisher){
+        return response.status(400).send({ message: 'Cannot query document' });
     }
 
-    const myPublisher = await Publisher.findById(_id)
-
-    Object.entries(request.body).forEach(([key, value]) => {
+    Object.entries(request.body).forEach(([key, value]) => { 
         if (value){
           myPublisher[key] = value
-        } else {
-          isError.push(key)
-        }
+        } 
       })
+         
+    const updatedPublisher = await myPublisher.save()
+    return response.status(201).send(updatedPublisher)
 
-    if (isError.length >= 1){
-        return response.status(400).send(`You are not allowed update "${isError}"`)  
-      }
-        
-    try {
-        const updatedPublisher = await myPublisher.save()
-        return response.status(201).send(updatedPublisher)
-        }
-    catch (error) {  
-        console.log(error)
-        return response.sendStatus(400)
-        }
+    } catch (error) {  
+            
+            return response.sendStatus(400)
+            }
 })
 
 

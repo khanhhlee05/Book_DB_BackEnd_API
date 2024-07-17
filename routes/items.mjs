@@ -7,17 +7,34 @@ import { Author } from "../mongoose/schemas/author.mjs"
 import { Genre } from "../mongoose/schemas/genre.mjs"
 import { Publisher } from "../mongoose/schemas/publisher.mjs"
 import bodyParser from "body-parser"
+import mongoose from "mongoose"
+
 
 
 
 
 const router = Router()
 
+async function checkID(refModel, refID) {
+    const refExist = await mongoose.model(refModel).findById({_id : refID})
+    if (!refExist) {
+        throw new Error(`${refModel} does not exist`)
+    }
+}
+
 
 //add new book
 router.post("/api/items", adminAuth, async (request, response) => {
-    const {authorId, title, genres, dateImported, publishedDate, copiesAvailable, publisherId} = request.body
+   
+    
+
     try {
+        const {authorId, title, genres, dateImported, publishedDate, copiesAvailable, publisherId} = request.body
+
+        await checkID('Publisher', publisherId);
+        await checkID('Author', authorId);
+        await Promise.all(genres.map(async (genreId) => checkID('Genre', genreId)));
+        
         const item = await Item.create({authorId, title, genres, dateImported, publishedDate, copiesAvailable, publisherId})
         return response.status(201).send(item)
     } catch (error) {
@@ -27,9 +44,14 @@ router.post("/api/items", adminAuth, async (request, response) => {
 
 
 //delete a book from db
-router.delete("/api/items", adminAuth, async (request, response) => {
-    const {_id} = request.body
+router.delete("/api/items/:_id", adminAuth, async (request, response) => { 
+    
+    
     try {
+        const {_id} = request.params
+        if (!mongoose.Types.ObjectId.isValid(_id)) {
+            return response.status(400).send({ message: 'Invalid ID format' });
+            }
         const deletedItem = await Item.findByIdAndDelete(_id)
         if (deletedItem){
             return response.status(201).send(`Deleted item: ${deletedItem}`)
@@ -43,9 +65,13 @@ router.delete("/api/items", adminAuth, async (request, response) => {
 
 
 //get detail of an item
-router.get("/api/items/detail", requireAuth, async (request, response) => {
-    const {_id} = request.body
+router.get("/api/items/:_id", requireAuth, async (request, response) => { 
+    
     try {
+        const {_id} = request.params
+        if (!mongoose.Types.ObjectId.isValid(_id)) {
+            return response.status(400).send({ message: 'Invalid ID format' });
+            }
         const queriedItem = await Item.findById(_id)
         if (queriedItem){
             return response.status(201).send(queriedItem)
@@ -58,17 +84,20 @@ router.get("/api/items/detail", requireAuth, async (request, response) => {
 } )
 
 //list books
-router.get("/api/items/list", requireAuth, async (request, response) => {
+router.get("/api/items", requireAuth, async (request, response) => {
     try {
         const bookList = await Item.find().sort({ publishedDate : -1 })
         if (bookList.length > 0){
             return response.status(201).send(bookList)
         } else {
-            return response.send("The list is empty")
+            return response.send("The list is empty") //return empty list
         }
     } catch (error) {
         return response.status(400).send(error.message)
     }
 }) 
+
+//update books
+
 
 export default router
