@@ -86,16 +86,102 @@ router.get("/api/items/:_id", requireAuth, async (request, response) => {
 //list books
 router.get("/api/items", requireAuth, async (request, response) => {
     try {
+        if (Object.keys(request.query).length === 0){
+        
         const bookList = await Item.find().sort({ publishedDate : -1 })
         
         return response.status(201).send(bookList)
+        } else {
+            const {query : {search_text, genre_ids, author_ids, publisher_ids, sort_by}} = request
+            let query = {} //--> create query objecyt
+
+            if (search_text){
+                query.title = {$regex : search_text}
+            }  
+            if (genre_ids){
+                const g_ids = genre_ids.split(",")
+                query.genres = {$in : g_ids}
+            }
+            if (author_ids){
+                const a_ids = author_ids.split(",")
+                query.authorId = {$in : a_ids}
+            }
+            if (publisher_ids){
+                const p_ids = publisher_ids.split(",")
+                query.publisherId = {$in : p_ids}
+            }
+
+            let sortOrder
+            let queriedList
+
+            if (sort_by){
+                if (sort_by === "asc"){
+                    sortOrder = 1
+                } else {
+                    sortOrder = -1
+                }
+                queriedList = await Item.find(query).sort({publishedDate: sortOrder})
+            } else {
+                queriedList = await Item.find(query).sort({publisherDate : -1})
+            }
+            return response.status(201).send(queriedList)
+        }
+
+        
         
     } catch (error) {
+        console.log(error)
         return response.status(400).send(error.message)
     }
 }) 
 
 //update books
 
+router.patch("/api/items/:_id", adminAuth, async (request, response) => {
+    try {
+        const {_id} = request.params
+        if (!mongoose.Types.ObjectId.isValid(_id)) {
+            return response.status(400).send({ message: "Invalid ID format"})
+        }
 
+        const myItem = await Item.findById(_id)
+        if (!myItem){
+            return response.status(400).send({ message: 'Cannot query document' });
+        }
+        try {
+            const updatePromises = Object.entries(request.body).map(async ([key, value]) => {
+                if (value) {
+                    if (key === "authorId") {
+                        await checkID('Author', value);
+                        myItem[key] = value;
+                    } else if (key === "genres") {
+                        await Promise.all(value.map(async (genreId) => checkID('Genre', genreId)));
+                        myItem[key] = value;
+                    } else if (key === "publisherId") {
+                        await checkID('Publisher', value);
+                        myItem[key] = value;
+                    } else {
+                        myItem[key] = value;
+                    }
+                }
+            });
+            //wait all the promise to be resolved than catch it
+            await Promise.all(updatePromises);
+
+        } catch (error) {
+            console.log(error)
+        return response.sendStatus(400)
+        }
+        
+       
+
+        const updatedItem = await myItem.save()
+        return response.status(201).send(updatedItem)
+
+    } catch (error) {
+        console.log(error)
+        return response.sendStatus(400)
+
+    }
+})
 export default router
