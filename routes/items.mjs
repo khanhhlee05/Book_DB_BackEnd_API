@@ -96,7 +96,7 @@ router.get("/api/items", requireAuth, async (request, response) => {
             let query = {} //--> create query objecyt
 
             if (search_text){
-                query.title = {$regex : search_text}
+                query.title = {$regex : search_text, $options: 'i'}
             }  
             if (genre_ids){
                 const g_ids = genre_ids.split(",")
@@ -128,7 +128,7 @@ router.get("/api/items", requireAuth, async (request, response) => {
         }
 
         
-        
+    
     } catch (error) {
         console.log(error)
         return response.status(400).send(error.message)
