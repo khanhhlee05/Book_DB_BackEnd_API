@@ -148,7 +148,7 @@ router.patch("/api/items/:_id", adminAuth, async (request, response) => {
         if (!myItem){
             return response.status(400).send({ message: 'Cannot query document' });
         }
-        try {
+        /* try {
             const updatePromises = Object.entries(request.body).map(async ([key, value]) => {
                 if (value) {
                     if (key === "authorId") {
@@ -171,7 +171,31 @@ router.patch("/api/items/:_id", adminAuth, async (request, response) => {
         } catch (error) {
             console.log(error)
         return response.sendStatus(400)
+        } */
+       try {
+       for await (const [key, value] of Object.entries(request.body)){
+        if (value){
+            if (key === "authorId") {
+                await checkID('Author', value);
+                myItem[key] = value;
+            } else if (key === "genres") {
+                await Promise.all(value.map((genreId) => checkID('Genre', genreId)));
+                myItem[key] = value;
+            } else if (key === "publisherId") {
+                await checkID('Publisher', value);
+                myItem[key] = value;
+            } else {
+                myItem[key] = value;
+            }
         }
+       }
+    } catch (error) {
+        console.log(error.message)
+        return response.sendStatus(400) 
+
+    }
+
+
         
        
 
