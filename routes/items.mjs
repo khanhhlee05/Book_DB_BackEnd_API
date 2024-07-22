@@ -98,9 +98,9 @@ router.get("/api/items/:_id", requireAuth, async (request, response) => {
             {$group: {
                 _id: "$_id",
                 title: {$first: "$title"},
-                author: {$first : "$author"},
-                publisher: {$first : "$publisher"},
-                genres: {$push: "$genres"},
+                author: {$first : { $arrayElemAt: ["$author", 0]}},
+                publisher: {$first : { $arrayElemAt: ["$publisher", 0] }},
+                genres: {$push: {$first: "$genres"}},
                 dateImported: {$first : "$dateImported"},
                 publishedDate: {$first : "$publishedDate"},
                 copiesAvailable: {$first : "$copiesAvailable"}
