@@ -72,7 +72,41 @@ router.get("/api/items/:_id", requireAuth, async (request, response) => {
         if (!mongoose.Types.ObjectId.isValid(_id)) {
             return response.status(400).send({ message: 'Invalid ID format' });
             }
-        const queriedItem = await Item.findById(_id)
+        //const queriedItem = await Item.findById(_id)
+
+        const queriedItem = await Item.aggregate([
+        {$match : {_id : new mongoose.Types.ObjectId(_id)} },
+           { $unwind: "$genres"},
+           { $lookup: {
+                from: "authors",
+                localField: "authorId",
+                foreignField: "_id",
+                as: "author"
+            }},
+            {$lookup: {
+                from: "publishers",
+                localField: "publisherId",
+                foreignField: "_id",
+                as: "publisher"
+            }},
+            {$lookup: {
+                from: "genres",
+                localField: "genres",
+                foreignField: "_id",
+                as: "genres"
+            }},
+            {$group: {
+                _id: "$_id",
+                title: {$first: "$title"},
+                author: {$first : "$author"},
+                publisher: {$first : "$publisher"},
+                genres: {$push: "$genres"},
+                dateImported: {$first : "$dateImported"},
+                publishedDate: {$first : "$publishedDate"},
+                copiesAvailable: {$first : "$copiesAvailable"}
+            }}
+    ])
+    console.log(JSON.stringify(queriedItem));
         if (queriedItem){
             return response.status(201).send(queriedItem)
         } else {
