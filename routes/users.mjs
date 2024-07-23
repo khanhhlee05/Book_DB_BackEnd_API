@@ -1,7 +1,7 @@
 import { Router } from "express"
-import { requireAuth } from "../middlewares/authMiddlewares.mjs"
+import { adminAuth, requireAuth } from "../middlewares/authMiddlewares.mjs"
 import { User } from "../mongoose/schemas/user.mjs"
-
+import {isMemberActive} from "../utils/users.mjs"
 
 
 const userFieldsWhiteList = {
@@ -15,19 +15,21 @@ const userFieldsWhiteList = {
 
 const router = Router()
 
-
+//get user
 router.get("/api/me", requireAuth, async (request, response) => {
-    
+
     try {
       const userToken = request.token
-        const user = await User.findById(userToken.id)
-        return response.status(200).send(user)
+      const user = await User.findById(userToken.id)
+      const userObj = user.toObject()
+      userObj.isMemberActive = isMemberActive(user)
+      return response.status(200).send(userObj)
     } catch (error) {
-        return response.sendStatus(400)
+        return response.sendStatus(400).send(error.message)
     }
 })
 
-
+//update user
 router.patch("/api/me"
   , requireAuth
   , async (request, response) => {
@@ -64,7 +66,45 @@ if (isError.length >= 1){
 
 })
 
+//delete user
+router.delete("/api/me"
+ , requireAuth
+ , async (request, response) => {
 
+    try{
+    const userToken = request.token
+    const user = await User.findByIdAndDelete(userToken.id)
+
+    if (!user){
+      return response.sendStatus(404)
+    }
+
+    return response.sendStatus(204)
+
+  } catch (error) {
+    console.log(error)
+    return response.sendStatus(400)
+    
+  }
+
+
+})
+
+//get list user
+router.get("/api/users", adminAuth, async (request, response) => {
+  try {
+    const users = await User.find().sort({ createdAt: -1 })
+    let listUser = []
+    for await (const user of users){
+      const userObj = user.toObject()
+      userObj.isMemberActive = isMemberActive(user)
+      listUser.push(userObj)
+    }
+    return response.status(200).send(listUser)
+  } catch (error) {
+    return response.sendStatus(400).send(error.message)
+  }
+})
     
 
 export default router
