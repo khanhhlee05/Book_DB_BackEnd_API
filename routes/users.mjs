@@ -209,23 +209,42 @@ router.get("/api/me/loan/:_id", requireAuth, async (request, response) => {
 try {
   const userToken = request.token
   if (Object.keys(request.query).length === 0){
-    const loanList = await Loan.find({userID: userToken.id}).sort({rentDue: -1})
+    const loanList = await Loan.find({userId: userToken.id}).sort({rentDue: -1})
     if (!loanList.length){
       return response.status(400).send("User has no loan history")
     } else {
       return response.status(200).send(loanList)
     }
   } else {
+
     const {overdue, sort_by} = request.query
     let query = {}
+    query.userId = userToken.id
+    const now = Date.now()
+
     if (overdue === "true"){
-      
+      query.rentDue = {$lt: now}
+    } else if (overdue === "false") {
+      query.rentDue = {$gte: now}
     }
+
+    let sortOrder, loanList
+    if (sort_by === "asc"){
+      sortOrder = 1
+    } else {
+      sortOrder = -1
+    }
+
+    loanList = await Loan.find(query).sort({rentDate : sortOrder})
+   
+    return response.status(200).send(loanList)
+    
 
   }
 
 } catch (error) {
-  
+  console.log(error.message)
+  return response.sendStatus(400)
 }
 })
 
