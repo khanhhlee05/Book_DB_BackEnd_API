@@ -166,35 +166,32 @@ router.post("/api/me/loan", requireAuth, async (request, response) => {
           return response.status(400).send("itemId is required") 
       }
 
-      // Find the item by its ID within the transaction session
-      const item = await Item.findById(itemId).session(session)
-      if (!item) {
-          await session.abortTransaction() 
-          session.endSession()
-          return response.status(400).send("Item not found") 
-      }
+      // Find the item  within the transaction session
+      const item = await Item.findOneAndUpdate(
+        { _id: itemId, copiesAvailable: { $gt: 0 } },
+        { $inc: { copiesAvailable: -1 } },
+        {  new: true ,session }
+    );  
 
-      // Check if the item has available copies
-      if (item.copiesAvailable > 0) {
-         
-          const newLoan = new Loan({ rentDate, rentDue, itemId, note, userId: userToken.id })
-          item.copiesAvailable -= 1 
+    if (!item) {
+        await session.abortTransaction();
+        session.endSession();
+        return response.status(400).send("Item not found");
+    }
 
-         
-          const confirmedLoan = await newLoan.save({ session })
-          const updatedItem = await item.save({ session })
+    const newLoan = new Loan({ rentDate, rentDue, itemId, note, userId: userToken.id });
+    const confirmedLoan = await newLoan.save({ session });
+          
 
           // Commit the transaction and end the session
+
+
           await session.commitTransaction()
           session.endSession()
 
         
-          response.status(200).send({ confirmedLoan, updatedItem })
-      } else {
-          await session.abortTransaction()
-          session.endSession()
-          return response.status(400).send("Item is not available")
-      }
+          response.status(200).send({ confirmedLoan, item })
+      
   } catch (error) {
     
       await session.abortTransaction()
