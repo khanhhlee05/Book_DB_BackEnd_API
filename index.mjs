@@ -16,7 +16,7 @@ app.use(routes)
 
 //Connect to DB
 mongoose
-    .connect("mongodb://localhost/library-system")
+    .connect("mongodb+srv://kle01:Ngay13thang10nam2005%40@cluster0.h5dqgqp.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
     .then(() => {console.log("Connected to DB")})
     .catch((err) => {console.log(`Error: ${err}`)})
 
