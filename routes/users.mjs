@@ -362,4 +362,35 @@ router.patch("/api/me/membership", requireAuth, async (request, response) => {
 
 })
 
+//delete memebrship
+router.delete("/api/me/membership", adminAuth, async (request, response) => {
+  try {
+      const _id = request.token.id
+      if (!mongoose.Types.ObjectId.isValid(_id)) {
+          return response.status(400).send({ message: 'Invalid ID format' });
+          }
+
+      const queriedUser = await User.findById(_id)
+
+      if (!queriedUser) {
+          return response.status(400).send({ message: "User not found" })
+      }
+
+      if (queriedUser.membership.length > 0){
+          const lastMembership = queriedUser.membership[queriedUser.membership.length - 1];
+          lastMembership.endDate = new Date()
+          const updatedUser = await queriedUser.save();
+          return response.status(200).send(updatedUser);
+      } else {
+          return response.status(400).send({ message: "User has no active membership" })
+      }
+
+
+      } catch (error) {
+          console.log(error.message)
+          return response.status(400).send(error)
+      }  
+          
+  
+})
 export default router
