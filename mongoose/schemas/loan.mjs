@@ -28,6 +28,7 @@ const LoanSchema = new mongoose.Schema({
         }
     },
 
+
     itemId: {
         type: mongoose.Schema.Types.ObjectId,
         required: [true, 'Item ID is required'],

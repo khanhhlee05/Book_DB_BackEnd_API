@@ -90,7 +90,8 @@ const UserSchema = new mongoose.Schema({
     role: {
         type: mongoose.Schema.Types.String,
         enum: ['user', 'admin'],
-        required: [true, 'Role is required']
+        required: [true, 'Role is required'],
+        default: "user"
     },
 
     lastLogin: {

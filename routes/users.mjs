@@ -117,24 +117,12 @@ router.post("/api/me/loan", requireAuth, async (request, response) => {
           session.endSession() 
           return response.sendStatus(400) 
       }
-
-      // Define the isMemberActive function to check if the user's membership is active
-      const isMemberActive = (user) => {
-          const now = new Date()
-          if (user.membership && user.membership.length > 0) {
-              const latestMembership = user.membership[user.membership.length - 1]
-              const latestStartDate = new Date(latestMembership.startDate)
-              const latestEndDate = new Date(latestMembership.endDate)
-              return now >= latestStartDate && now < latestEndDate
-          }
-          return false
-      }
-
+      
       // Check if the user is an active member
       if (!isMemberActive(user)) {
           await session.abortTransaction() 
           session.endSession() 
-          return response.status(400).send("You are not a member") 
+          return response.status(400) .send("You are not a member") 
       }
 
       // Extract rentDate, rentDue, itemId, and note from the request body
@@ -170,7 +158,7 @@ router.post("/api/me/loan", requireAuth, async (request, response) => {
       const item = await Item.findOneAndUpdate(
         { _id: itemId, copiesAvailable: { $gt: 0 } },
         { $inc: { copiesAvailable: -1 } },
-        {  new: true ,session }
+        {  new: true , session }
     );  
 
     if (!item) {
@@ -190,18 +178,18 @@ router.post("/api/me/loan", requireAuth, async (request, response) => {
           session.endSession()
 
         
-          response.status(200).send({ confirmedLoan, item })
+          return response.status(200).send({ confirmedLoan, item })
       
   } catch (error) {
     
       await session.abortTransaction()
       session.endSession()
       console.log(error)
-      response.status(400).send(error.message) 
+      return response.status(400).send(error.message) 
   }
 })
 
-router.get("/api/me/loan/:_id", requireAuth, async (request, response) => {
+router.get("/api/me/loan", requireAuth, async (request, response) => {
 //default case: return all loan of the user
 try {
   const userToken = request.token
@@ -243,6 +231,135 @@ try {
   console.log(error.message)
   return response.sendStatus(400)
 }
+})
+
+router.patch("/api/me/loan/:loanId", requireAuth, async (request, response) => {
+  const session = await mongoose.startSession()
+  session.startTransaction()
+
+
+  try {
+    const { loanId } = request.params
+    const userToken = request.token
+    const user = await User.findById(userToken.id)
+
+    if (!user) {
+        await session.abortTransaction()
+        session.endSession()
+        return response.sendStatus(400)
+    }
+
+    if (!isMemberActive(user)) {
+      await session.abortTransaction()
+      session.endSession()
+      return response.status(400).send("You are not a member")
+    }
+
+    
+    const loan = await Loan.findById(loanId).session(session)
+    
+    if (!loan) {
+      await session.abortTransaction()
+      session.endSession()
+      return response.sendStatus(404)
+    } 
+
+    console.log(userToken.id !== String(loan.userId))
+    if (userToken.id !== String(loan.userId)) {
+      await session.abortTransaction()
+      session.endSession()
+      return response.status(400).send("The profile does not match with the loan")
+    }
+
+
+    
+    if (loan.actualReturnDate){
+      await session.abortTransaction()
+      session.endSession()
+      return response.status(400).send("Loan has already been returned" )
+    } else {
+      loan["actualReturnDate"] = Date.now()
+      
+    }
+    const updatedLoan = await loan.save({ session })
+
+    const item = await Item.findByIdAndUpdate(
+      loan.itemId, 
+      {$inc : {copiesAvailable : 1}}, 
+      {new: true, session}
+    )
+
+    if (!item) {
+      await session.abortTransaction()
+      session.endSession()
+      return response.sendStatus(404)
+    }
+
+    
+    await session.commitTransaction()
+    session.endSession()
+
+    return response.status(200).send({updatedLoan, item})
+
+
+  } catch (error) {
+    console.log(error)
+    await session.abortTransaction()
+    session.endSession()
+    return response.status(400).send(error.message)
+  }
+
+})
+
+//register new membership
+router.patch("/api/me/membership", requireAuth, async (request, response) => {
+  try {
+      const _id = request.token.id
+      if (!mongoose.Types.ObjectId.isValid(_id)) {
+          return response.status(400).send({ message: 'Invalid ID format' });
+          } 
+
+      const queriedUser = await User.findById(_id)
+      if (!queriedUser) {
+          return response.status(400).send({ message: "User not found" })
+      }
+      //get the duration
+      let {duration} = request.body //get the duration from the body
+      if (!duration || duration < 0){
+          duration = 2 //if null set to default 2 months
+      }
+
+      duration = Math.round(duration) //make sure duration is integer value
+
+      const membership = {
+          startDate: new Date(),
+          endDate: new Date()
+      };
+      membership.endDate.setMonth(membership.endDate.getMonth() + duration);
+
+      if (queriedUser.membership.length > 0) { //check for existing memberships
+          const lastMembership = queriedUser.membership[queriedUser.membership.length - 1];
+          if (lastMembership.endDate >= new Date()) {
+              /* membership.startDate = lastMembership.endDate;
+              membership.endDate = new Date(lastMembership.endDate);
+              membership.endDate.setMonth(membership.endDate.getMonth() + duration); */
+              let extendEndDate = new Date(lastMembership.endDate)
+              extendEndDate.setMonth(extendEndDate.getMonth() + duration)
+              lastMembership.endDate = extendEndDate
+              const updatedUser = await queriedUser.save();
+              return response.status(200).send(updatedUser);
+          }
+          }
+          queriedUser.membership.push(membership);
+          const updatedUser = await queriedUser.save();
+          return response.status(200).send(updatedUser);
+
+
+      } catch (error) {
+      return response.status(400).send(error.message)
+  }
+  
+
 })
 
 export default router

@@ -16,9 +16,9 @@ const createToken = (id, email, role) => {
 
 //create a new user
 router.post("/api/auth/signup",async (request, response) => {
-    const {firstName, lastName, password, email, phoneNumber, address, role} = request.body
+    const {firstName, lastName, password, email, phoneNumber, address} = request.body
     try {
-        const user = await User.create({ firstName, lastName, password, email, phoneNumber, address, role })
+        const user = await User.create({ firstName, lastName, password, email, phoneNumber, address})
         const token = createToken(user._id, user.email, user.role) //--> assign the access token
         response.cookie("jwt",token, {httpOnly: true, maxAge: maxAge * 1000}) //-->assign the token to a cookie
         return response.status(201).json({user: user._id})
