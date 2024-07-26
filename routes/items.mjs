@@ -6,6 +6,7 @@ import { Item } from "../mongoose/schemas/item.mjs"
 import { Author } from "../mongoose/schemas/author.mjs"
 import { Genre } from "../mongoose/schemas/genre.mjs"
 import { Publisher } from "../mongoose/schemas/publisher.mjs"
+import { checkID } from "../utils/users.mjs"
 import bodyParser from "body-parser"
 import mongoose from "mongoose"
 
@@ -15,13 +16,13 @@ import mongoose from "mongoose"
 
 const router = Router()
 
-async function checkID(refModel, refID) {
+/* async function checkID(refModel, refID) {
     const refExist = await mongoose.model(refModel).findById({_id : refID})
     if (!refExist) {
         throw new Error(`${refModel} does not exist`)
     }
 }
-
+ */
 
 //add new book
 router.post("/api/items", adminAuth, async (request, response) => {

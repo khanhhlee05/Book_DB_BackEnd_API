@@ -1,3 +1,7 @@
+import mongoose from "mongoose"
+
+
+
 export const isMemberActive = (user) => {
     const now = new Date();
     if (user.membership && user.membership.length > 0) {
@@ -8,3 +12,11 @@ export const isMemberActive = (user) => {
     }
     return false;
 };
+
+export const checkID = async function checkID(refModel, refID) {
+    const refExist = await mongoose.model(refModel).findById({_id : refID})
+    if (!refExist) {
+        throw new Error(`${refModel} does not exist`)
+    }
+}
+

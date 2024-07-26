@@ -4,6 +4,9 @@ import { User } from "../mongoose/schemas/user.mjs"
 import {isMemberActive} from "../utils/users.mjs"
 import { Loan } from "../mongoose/schemas/loan.mjs"
 import { Item } from "../mongoose/schemas/item.mjs"
+import { Review } from "../mongoose/schemas/review.mjs"
+import { Comment } from "../mongoose/schemas/comment.mjs"
+import { checkID } from "../utils/users.mjs"
 import mongoose from "mongoose"
 
 const userFieldsWhiteList = {
@@ -392,7 +395,31 @@ router.delete("/api/me/membership", adminAuth, async (request, response) => {
           console.log(error.message)
           return response.status(400).send(error)
       }  
-          
+    
   
 })
+
+
+//create new review 
+router.post("/api/me/review", requireAuth, async (request, response) => {
+  try {
+    const { itemId, rating, reviewText } = request.body
+    const _id = request.token.id
+    await checkID("User",_id)
+    await checkID("Item", itemId)
+    
+    const newReview = new Review({ itemId, rating, reviewText, userId: _id })
+    const savedReview = await newReview.save()
+    
+    if (!savedReview) {
+      return response.status(400).send("Failed to create review")
+    }
+
+    return response.status(200).send(savedReview)
+  
+  } catch (error) {
+    console.log(error)
+    return response.status(400).send(error.message)
+  }
+  })
 export default router

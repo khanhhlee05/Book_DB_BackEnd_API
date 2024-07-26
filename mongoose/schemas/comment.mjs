@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const reviewSchema = new mongoose.Schema({
+const commentSchema = new mongoose.Schema({
     itemId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Item',
@@ -11,17 +11,12 @@ const reviewSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
-    rating: {
-        type: Number,
-        required: true,
-        min: 1,
-        max: 5
-    },
-    reviewText: {
+    text: {
         type: String,
+        required: true,
         trim: true,
-        minlength: 5,
-        maxlength: 2000
+        minlength: 1,
+        maxlength: 1000
     },
     createdAt: {
         type: Date,
@@ -33,10 +28,10 @@ const reviewSchema = new mongoose.Schema({
     }
 });
 
-reviewSchema.pre('save', function(next) {
+commentSchema.pre('save', function(next) {
     this.updatedAt = Date.now();
     next();
 });
 
-export const Review = mongoose.model('Review', reviewSchema);
+export const Comment = mongoose.model('Comment', commentSchema);
 
