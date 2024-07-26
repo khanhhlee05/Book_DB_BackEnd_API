@@ -422,4 +422,74 @@ router.post("/api/me/review", requireAuth, async (request, response) => {
     return response.status(400).send(error.message)
   }
   })
+
+//update review
+router.patch("/api/me/review/:reviewId", requireAuth, async (request, response) => {
+  try {
+    const {itemId, rating, reviewText} = request.body
+    const {reviewId} = request.params
+    await checkID("Review",reviewId)
+    await checkID("Item", itemId)
+
+    const myReview = await Review.findById(reviewId)
+    if (!myReview) {
+      return response.status(400).send({ message: "Review not found" })
+    }
+
+    Object.entries(request.body).forEach(([key,value]) => {
+      if (value){
+        myReview[key] = value
+      }
+    })
+
+    const updatedReview = await myReview.save()
+    return response.status(200).send(updatedReview)
+  } catch (error) {
+    return response.status(400).send(error.message)
+    
+  }
+})
+
+
+//delete review
+router.delete("/api/me/review/:reviewId", requireAuth, async (request, response) => {
+  try {
+    const { reviewId } = request.params
+    await checkID("Review",reviewId)
+    const myReview = await Review.findByIdAndDelete(reviewId)
+  
+    return response.status(200).send(myReview) 
+    
+  } catch (error) {
+    return response.status(400).send(error.message)
+  }
+
+})
+
+//get list of reviews
+router.get("/api/me/review", requireAuth, async (request, response) => {
+  try{
+    const _id = request.token.id
+    await checkID("User",_id)
+    let { page , limit  } = request.query; 
+    if(!page || page < 1){
+      page = 
+    }
+    if(!limit || limit > 100 || limit < 0){
+      limit = 10
+    }
+    const user = await User.findById(_id)
+    const reviews = await Review.find({ userId: _id }).skip((page - 1) * limit).limit(parseInt(limit)).sort({ createdAt: -1 })
+
+    return response.status(200).send({page, limit, user, reviews})
+
+  } catch(error){
+    console.log(error)
+    return response.status(400).send(error.message)
+  } 
+})
+
+
+
+
 export default router

@@ -14,6 +14,9 @@ export const isMemberActive = (user) => {
 };
 
 export const checkID = async function checkID(refModel, refID) {
+    if (!mongoose.Types.ObjectId.isValid(refID)) {
+        throw new Error('Invalid ID format')
+        }
     const refExist = await mongoose.model(refModel).findById({_id : refID})
     if (!refExist) {
         throw new Error(`${refModel} does not exist`)
