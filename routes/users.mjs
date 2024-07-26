@@ -426,21 +426,23 @@ router.post("/api/me/review", requireAuth, async (request, response) => {
 //update review
 router.patch("/api/me/review/:reviewId", requireAuth, async (request, response) => {
   try {
-    const {itemId, rating, reviewText} = request.body
+    const {rating, reviewText} = request.body
     const {reviewId} = request.params
     await checkID("Review",reviewId)
-    await checkID("Item", itemId)
+    
 
     const myReview = await Review.findById(reviewId)
     if (!myReview) {
       return response.status(400).send({ message: "Review not found" })
     }
 
-    Object.entries(request.body).forEach(([key,value]) => {
-      if (value){
-        myReview[key] = value
-      }
-    })
+   if (rating){
+    myReview["rating"] = rating
+   } 
+
+   if (reviewText){
+    myReview["reviewText"] = reviewText
+   }
 
     const updatedReview = await myReview.save()
     return response.status(200).send(updatedReview)
@@ -489,5 +491,89 @@ router.get("/api/me/review", requireAuth, async (request, response) => {
   } 
 })
 
+// create new comment
+router.post('/api/me/comment', requireAuth, async (request, response) => {
+  try {
+    const { itemId, text } = request.body;
+    const userId = request.token.id;
+    await checkID('User', userId);
+    await checkID('Item', itemId);
+
+    const newComment = new Comment({ itemId, text, userId });
+    const savedComment = await newComment.save();
+
+    if (!savedComment) {
+      return response.status(400).send('Failed to create comment');
+    }
+
+    return response.status(200).send(savedComment);
+  } catch (error) {
+    console.log(error);
+    return response.status(400).send(error.message);
+  }
+})
+
+
+// update comment
+router.patch('/api/me/comment/:commentId', requireAuth, async (request, response) => {
+  try {
+    const { text } = request.body;
+    const { commentId } = request.params;
+    await checkID('Comment', commentId);
+
+    const myComment = await Comment.findById(commentId);
+    if (!myComment) {
+      return response.status(400).send({ message: 'Comment not found' });
+    }
+
+    if (text) {
+      myComment["text"] = text;
+    }
+
+    const updatedComment = await myComment.save();
+    return response.status(200).send(updatedComment);
+  } catch (error) {
+    return response.status(400).send(error.message);
+  }
+});
+
+// delete comment
+router.delete('/api/me/comment/:commentId', requireAuth, async (request, response) => {
+  try {
+    const { commentId } = request.params;
+    await checkID('Comment', commentId);
+    const myComment = await Comment.findByIdAndDelete(commentId);
+
+    return response.status(200).send(myComment);
+  } catch (error) {
+    return response.status(400).send(error.message);
+  }
+});
+
+// get list of comments
+router.get('/api/me/comment', requireAuth, async (request, response) => {
+  try {
+    const userId = request.token.id;
+    await checkID('User', userId);
+    let { page, limit } = request.query;
+    if (!page || page < 1) {
+      page = 1;
+    }
+    if (!limit || limit > 100 || limit < 0) {
+      limit = 10;
+    }
+
+    const user = await User.findById(userId);
+    const comments = await Comment.find({ userId })
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit))
+      .sort({ createdAt: -1 });
+
+    return response.status(200).send({ page, limit, user, comments });
+  } catch (error) {
+    console.log(error);
+    return response.status(400).send(error.message);
+  }
+})
 
 export default router
