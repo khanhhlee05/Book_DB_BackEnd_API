@@ -471,9 +471,9 @@ router.get("/api/me/review", requireAuth, async (request, response) => {
   try{
     const _id = request.token.id
     await checkID("User",_id)
-    let { page , limit  } = request.query; 
+    const { page , limit  } = request.query; 
     if(!page || page < 1){
-      page = 
+      page = 1
     }
     if(!limit || limit > 100 || limit < 0){
       limit = 10
@@ -488,8 +488,6 @@ router.get("/api/me/review", requireAuth, async (request, response) => {
     return response.status(400).send(error.message)
   } 
 })
-
-
 
 
 export default router
