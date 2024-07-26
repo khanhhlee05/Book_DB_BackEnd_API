@@ -99,7 +99,7 @@ router.delete("/api/me"
 })
 
 
-// New loan
+// create new loan
 router.post("/api/me/loan", requireAuth, async (request, response) => {
   // Start a session for the transaction
   const session = await mongoose.startSession()
@@ -189,6 +189,7 @@ router.post("/api/me/loan", requireAuth, async (request, response) => {
   }
 })
 
+//get loan list of a logged in user
 router.get("/api/me/loan", requireAuth, async (request, response) => {
 //default case: return all loan of the user
 try {
@@ -233,9 +234,10 @@ try {
 }
 })
 
+//return loan 
 router.patch("/api/me/loan/:loanId", requireAuth, async (request, response) => {
-  const session = await mongoose.startSession()
-  session.startTransaction()
+const session = await mongoose.startSession()
+session.startTransaction()
 
 
   try {
