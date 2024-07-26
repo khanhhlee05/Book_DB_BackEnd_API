@@ -1,20 +1,5 @@
 import mongoose from 'mongoose';
 
-const commentSchema = new mongoose.Schema({
-    userId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
-    },
-    text: {
-        type: String,
-        required: true,
-        trim: true,
-        minlength: 1,
-        maxlength: 1000
-    }
-});
-
 const reviewSchema = new mongoose.Schema({
     itemId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -34,12 +19,11 @@ const reviewSchema = new mongoose.Schema({
     },
     reviewText: {
         type: String,
-        required: true,
         trim: true,
         minlength: 10,
         maxlength: 2000
     },
-    comments: [commentSchema],
+   
     createdAt: {
         type: Date,
         default: Date.now
