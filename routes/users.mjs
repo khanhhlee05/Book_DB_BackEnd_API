@@ -423,7 +423,7 @@ router.post("/api/me/review", requireAuth, async (request, response) => {
   }
   })
 
-//update review
+//Update review
 router.patch("/api/me/review/:reviewId", requireAuth, async (request, response) => {
   try {
     const {rating, reviewText} = request.body
@@ -473,7 +473,7 @@ router.get("/api/me/review", requireAuth, async (request, response) => {
   try{
     const _id = request.token.id
     await checkID("User",_id)
-    const { page , limit  } = request.query; 
+    let { page , limit  } = request.query; 
     if(!page || page < 1){
       page = 1
     }
