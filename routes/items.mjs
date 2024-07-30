@@ -18,53 +18,7 @@ import mongoose from "mongoose"
 
 const router = Router()
 
-/* async function checkID(refModel, refID) {
-    const refExist = await mongoose.model(refModel).findById({_id : refID})
-    if (!refExist) {
-        throw new Error(`${refModel} does not exist`)
-    }
-}
- */
 
-//add new book
-router.post("/api/items", adminAuth, async (request, response) => {
-   
-    
-
-    try {
-        const {authorId, title, genres, dateImported, publishedDate, copiesAvailable, publisherId} = request.body
-
-        await checkID('Publisher', publisherId);
-        await checkID('Author', authorId);
-        await Promise.all(genres.map(async (genreId) => checkID('Genre', genreId)));
-        
-        const item = await Item.create({authorId, title, genres, dateImported, publishedDate, copiesAvailable, publisherId})
-        return response.status(201).send(item)
-    } catch (error) {
-        return response.status(400).send(error.message)
-    }
-})
-
-
-//delete a book from db
-router.delete("/api/items/:_id", adminAuth, async (request, response) => { 
-    
-    
-    try {
-        const {_id} = request.params
-        if (!mongoose.Types.ObjectId.isValid(_id)) {
-            return response.status(400).send({ message: 'Invalid ID format' });
-            }
-        const deletedItem = await Item.findByIdAndDelete(_id)
-        if (deletedItem){
-            return response.status(201).send(`Deleted item: ${deletedItem}`)
-        } else {
-            return response.status(400).send(`Unable to delete: Object might not exist`)
-        }
-    } catch (error){
-        return response.status(400).send(error.message)
-    }
-})
 
 
 //get detail of an item
@@ -172,83 +126,10 @@ router.get("/api/items", requireAuth, async (request, response) => {
     }
 }) 
 
-//update books
-
-router.patch("/api/items/:_id", adminAuth, async (request, response) => {
-    try {
-        const {_id} = request.params
-        if (!mongoose.Types.ObjectId.isValid(_id)) {
-            return response.status(400).send({ message: "Invalid ID format"})
-        }
-
-        const myItem = await Item.findById(_id)
-        if (!myItem){
-            return response.status(400).send({ message: 'Cannot query document' });
-        }
-        /* try {
-            const updatePromises = Object.entries(request.body).map(async ([key, value]) => {
-                if (value) {
-                    if (key === "authorId") {
-                        await checkID('Author', value);
-                        myItem[key] = value;
-                    } else if (key === "genres") {
-                        await Promise.all(value.map(async (genreId) => checkID('Genre', genreId)));
-                        myItem[key] = value;
-                    } else if (key === "publisherId") {
-                        await checkID('Publisher', value);
-                        myItem[key] = value;
-                    } else {
-                        myItem[key] = value;
-                    }
-                }
-            });
-            //wait all the promise to be resolved than catch it
-            await Promise.all(updatePromises);
-
-        } catch (error) {
-            console.log(error)
-        return response.sendStatus(400)
-        } */
-       try {
-       for await (const [key, value] of Object.entries(request.body)){
-        if (value){
-            if (key === "authorId") {
-                await checkID('Author', value);
-                myItem[key] = value;
-            } else if (key === "genres") {
-                await Promise.all(value.map((genreId) => checkID('Genre', genreId)));
-                myItem[key] = value;
-            } else if (key === "publisherId") {
-                await checkID('Publisher', value);
-                myItem[key] = value;
-            } else {
-                myItem[key] = value;
-            }
-        }
-       }
-    } catch (error) {
-        console.log(error.message)
-        return response.sendStatus(400) 
-
-    }
-
-
-        
-       
-
-        const updatedItem = await myItem.save()
-        return response.status(201).send(updatedItem)
-
-    } catch (error) {
-        console.log(error)
-        return response.sendStatus(400)
-
-    }
-})
 
 
 // get list of comments
-router.get('/api/items/comment/:itemId', requireAuth, async (request, response) => {
+router.get('/api/items/comments/:itemId', requireAuth, async (request, response) => {
     try {
       const {itemId} = request.params;
       await checkID('Item', itemId);
@@ -275,7 +156,7 @@ router.get('/api/items/comment/:itemId', requireAuth, async (request, response) 
 
 
   //get list of reviews
-router.get("/api/items/review/:itemId", requireAuth, async (request, response) => {
+router.get("/api/items/reviews/:itemId", requireAuth, async (request, response) => {
     try{
       const {itemId} = request.params
       await checkID("Item",itemId)

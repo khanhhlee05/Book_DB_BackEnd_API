@@ -367,41 +367,11 @@ router.patch("/api/me/membership", requireAuth, async (request, response) => {
 
 })
 
-//delete memebrship
-router.delete("/api/me/membership", adminAuth, async (request, response) => {
-  try {
-      const _id = request.token.id
-      if (!mongoose.Types.ObjectId.isValid(_id)) {
-          return response.status(400).send({ message: 'Invalid ID format' });
-          }
 
-      const queriedUser = await User.findById(_id)
-
-      if (!queriedUser) {
-          return response.status(400).send({ message: "User not found" })
-      }
-
-      if (queriedUser.membership.length > 0){
-          const lastMembership = queriedUser.membership[queriedUser.membership.length - 1];
-          lastMembership.endDate = new Date()
-          const updatedUser = await queriedUser.save();
-          return response.status(200).send(updatedUser);
-      } else {
-          return response.status(400).send({ message: "User has no active membership" })
-      }
-
-
-      } catch (error) {
-          console.log(error.message)
-          return response.status(400).send(error)
-      }  
-    
-  
-})
 
 
 //create new review 
-router.post("/api/me/review", requireAuth, async (request, response) => {
+router.post("/api/me/reviews", requireAuth, async (request, response) => {
   try {
     const { itemId, rating, reviewText } = request.body
     const _id = request.token.id
@@ -424,7 +394,7 @@ router.post("/api/me/review", requireAuth, async (request, response) => {
   })
 
 //Update review
-router.patch("/api/me/review/:reviewId", requireAuth, async (request, response) => {
+router.patch("/api/me/reviews/:reviewId", requireAuth, async (request, response) => {
   try {
     const {rating, reviewText} = request.body
     const {reviewId} = request.params
@@ -454,7 +424,7 @@ router.patch("/api/me/review/:reviewId", requireAuth, async (request, response) 
 
 
 //delete review
-router.delete("/api/me/review/:reviewId", requireAuth, async (request, response) => {
+router.delete("/api/me/reviews/:reviewId", requireAuth, async (request, response) => {
   try {
     const { reviewId } = request.params
     await checkID("Review",reviewId)
@@ -471,7 +441,7 @@ router.delete("/api/me/review/:reviewId", requireAuth, async (request, response)
 
 
 // create new comment
-router.post('/api/me/comment', requireAuth, async (request, response) => {
+router.post('/api/me/comments', requireAuth, async (request, response) => {
   try {
     const { itemId, text } = request.body;
     const userId = request.token.id;
@@ -494,7 +464,7 @@ router.post('/api/me/comment', requireAuth, async (request, response) => {
 
 
 // update comment
-router.patch('/api/me/comment/:commentId', requireAuth, async (request, response) => {
+router.patch('/api/me/comments/:commentId', requireAuth, async (request, response) => {
   try {
     const { text } = request.body;
     const { commentId } = request.params;
@@ -517,7 +487,7 @@ router.patch('/api/me/comment/:commentId', requireAuth, async (request, response
 });
 
 // delete comment
-router.delete('/api/me/comment/:commentId', requireAuth, async (request, response) => {
+router.delete('/api/me/comments/:commentId', requireAuth, async (request, response) => {
   try {
     const { commentId } = request.params;
     await checkID('Comment', commentId);
