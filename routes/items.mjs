@@ -52,6 +52,13 @@ router.get("/api/items/:_id", requireAuth, async (request, response) => {
                 foreignField: "_id",
                 as: "genres"
             }},
+            {$lookup: {
+                from: "reviews",
+                localField: "_id",
+                foreignField: "itemId",
+                as: "reviews"
+            }},
+            {$unwind : "$reviews"},
             {$group: {
                 _id: "$_id",
                 title: {$first: "$title"},
@@ -60,10 +67,12 @@ router.get("/api/items/:_id", requireAuth, async (request, response) => {
                 genres: {$push: {$first: "$genres"}},
                 dateImported: {$first : "$dateImported"},
                 publishedDate: {$first : "$publishedDate"},
-                copiesAvailable: {$first : "$copiesAvailable"}
+                copiesAvailable: {$first : "$copiesAvailable"},
+                reviews:{$avg :"$reviews.rating" }
+
             }}
     ])
-    console.log(JSON.stringify(queriedItem));
+
         if (queriedItem){
             return response.status(201).send(queriedItem)
         } else {
