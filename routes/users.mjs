@@ -468,28 +468,7 @@ router.delete("/api/me/review/:reviewId", requireAuth, async (request, response)
 
 })
 
-//get list of reviews
-router.get("/api/me/review", requireAuth, async (request, response) => {
-  try{
-    const _id = request.token.id
-    await checkID("User",_id)
-    let { page , limit  } = request.query; 
-    if(!page || page < 1){
-      page = 1
-    }
-    if(!limit || limit > 100 || limit < 0){
-      limit = 10
-    }
-    const user = await User.findById(_id)
-    const reviews = await Review.find({ userId: _id }).skip((page - 1) * limit).limit(parseInt(limit)).sort({ createdAt: -1 })
 
-    return response.status(200).send({page, limit, user, reviews})
-
-  } catch(error){
-    console.log(error)
-    return response.status(400).send(error.message)
-  } 
-})
 
 // create new comment
 router.post('/api/me/comment', requireAuth, async (request, response) => {
@@ -550,30 +529,6 @@ router.delete('/api/me/comment/:commentId', requireAuth, async (request, respons
   }
 });
 
-// get list of comments
-router.get('/api/me/comment', requireAuth, async (request, response) => {
-  try {
-    const userId = request.token.id;
-    await checkID('User', userId);
-    let { page, limit } = request.query;
-    if (!page || page < 1) {
-      page = 1;
-    }
-    if (!limit || limit > 100 || limit < 0) {
-      limit = 10;
-    }
 
-    const user = await User.findById(userId);
-    const comments = await Comment.find({ userId })
-      .skip((page - 1) * limit)
-      .limit(parseInt(limit))
-      .sort({ createdAt: -1 });
-
-    return response.status(200).send({ page, limit, user, comments });
-  } catch (error) {
-    console.log(error);
-    return response.status(400).send(error.message);
-  }
-})
 
 export default router

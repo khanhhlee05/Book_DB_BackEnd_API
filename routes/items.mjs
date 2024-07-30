@@ -3,6 +3,8 @@ import { adminAuth } from "../middlewares/authMiddlewares.mjs"
 import { requireAuth } from "../middlewares/authMiddlewares.mjs"
 import { User } from "../mongoose/schemas/user.mjs"
 import { Item } from "../mongoose/schemas/item.mjs"
+import {Comment} from "../mongoose/schemas/comment.mjs"
+import { Review } from "../mongoose/schemas/review.mjs"
 import { Author } from "../mongoose/schemas/author.mjs"
 import { Genre } from "../mongoose/schemas/genre.mjs"
 import { Publisher } from "../mongoose/schemas/publisher.mjs"
@@ -243,4 +245,55 @@ router.patch("/api/items/:_id", adminAuth, async (request, response) => {
 
     }
 })
+
+
+// get list of comments
+router.get('/api/items/comment/:itemId', requireAuth, async (request, response) => {
+    try {
+      const {itemId} = request.params;
+      await checkID('Item', itemId);
+      let { page, limit } = request.query;
+      if (!page || page < 1) {
+        page = 1;
+      }
+      if (!limit || limit > 100 || limit < 0) {
+        limit = 10;
+      }
+  
+      const item = await Item.findById(itemId);
+      const comments = await Comment.find({ itemId })
+        .skip((page - 1) * limit)
+        .limit(parseInt(limit))
+        .sort({ createdAt: -1 });
+  
+      return response.status(200).send({ page, limit, item, comments });
+    } catch (error) {
+      console.log(error);
+      return response.status(400).send(error.message);
+    }
+  })
+
+
+  //get list of reviews
+router.get("/api/items/review/:itemId", requireAuth, async (request, response) => {
+    try{
+      const {itemId} = request.params
+      await checkID("Item",itemId)
+      let { page , limit  } = request.query; 
+      if(!page || page < 1){
+        page = 1
+      }
+      if(!limit || limit > 100 || limit < 0){
+        limit = 10
+      }
+      const item = await Item.findById(itemId)
+      const reviews = await Review.find({ itemId }).skip((page - 1) * limit).limit(parseInt(limit)).sort({ createdAt: -1 })
+  
+      return response.status(200).send({page, limit, item, reviews})
+  
+    } catch(error){
+      console.log(error)
+      return response.status(400).send(error.message)
+    } 
+  })
 export default router
