@@ -18,7 +18,7 @@ router.get("/api/admin/users", adminAuth, async (request, response) => {
     try {
       const users = await User.find().sort({ createdAt: -1 })
       let listUser = []
-      for await (const user of users){
+      for (const user of users){
         const userObj = user.toObject()
         userObj.isMemberActive = isMemberActive(user)
         listUser.push(userObj)
