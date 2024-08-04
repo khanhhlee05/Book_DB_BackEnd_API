@@ -368,7 +368,7 @@ router.patch("/api/me/membership", requireAuth, async (request, response) => {
 })
 
   //delete memebrship
-  router.delete("/api/users/membership", requireAuth, async (request, response) => {
+  router.delete("/api/me/membership", requireAuth, async (request, response) => {
     try {
         const _id = request.token.id
         if (!mongoose.Types.ObjectId.isValid(_id)) {
