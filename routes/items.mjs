@@ -32,46 +32,71 @@ router.get("/api/items/:_id", requireAuth, async (request, response) => {
         //const queriedItem = await Item.findById(_id)
 
         const queriedItem = await Item.aggregate([
-        {$match : {_id : new mongoose.Types.ObjectId(_id)} },
-           { $unwind: "$genres"},
-           { $lookup: {
+            { $match: { _id: new mongoose.Types.ObjectId(_id) } },
+            { $lookup: {
                 from: "authors",
                 localField: "authorId",
                 foreignField: "_id",
                 as: "author"
             }},
-            {$lookup: {
+            { $lookup: {
                 from: "publishers",
                 localField: "publisherId",
                 foreignField: "_id",
                 as: "publisher"
             }},
-            {$lookup: {
-                from: "genres",
-                localField: "genres",
-                foreignField: "_id",
-                as: "genres"
-            }},
-            {$lookup: {
+            { $lookup: {
                 from: "reviews",
                 localField: "_id",
                 foreignField: "itemId",
                 as: "reviews"
             }},
-            {$unwind : "$reviews"},
-            {$group: {
+            { $unwind: {
+                path: "$genres",
+                preserveNullAndEmptyArrays: true
+            }},
+            { $lookup: {
+                from: "genres",
+                localField: "genres",
+                foreignField: "_id",
+                as: "genreDetails"
+            }},
+            { $unwind: {
+                path: "$genreDetails",
+                preserveNullAndEmptyArrays: true
+            }},
+            { $unwind: {
+                path: "$reviews",
+                preserveNullAndEmptyArrays: true
+            }},
+            { $group: {
                 _id: "$_id",
-                title: {$first: "$title"},
-                author: {$first : { $arrayElemAt: ["$author", 0]}},
-                publisher: {$first : { $arrayElemAt: ["$publisher", 0] }},
-                genres: {$push: {$first: "$genres"}},
-                dateImported: {$first : "$dateImported"},
-                publishedDate: {$first : "$publishedDate"},
-                copiesAvailable: {$first : "$copiesAvailable"},
-                reviews:{$avg :"$reviews.rating" }
-
+                title: { $first: "$title" },
+                author: { $first: { $arrayElemAt: ["$author", 0] } },
+                publisher: { $first: { $arrayElemAt: ["$publisher", 0] } },
+                genres: { $addToSet: "$genreDetails" },
+                dateImported: { $first: "$dateImported" },
+                publishedDate: { $first: "$publishedDate" },
+                copiesAvailable: { $first: "$copiesAvailable" },
+                avgRating: { $avg: "$reviews.rating" }
+            }},
+            { $project: {
+                _id: 1,
+                title: 1,
+                author: 1,
+                publisher: 1,
+                genres: 1,
+                dateImported: 1,
+                publishedDate: 1,
+                copiesAvailable: 1,
+                avgRating: { $ifNull: ["$avgRating", null] }
             }}
-    ])
+        ]);
+        
+        console.log(queriedItem);
+        
+        
+        
 
         if (queriedItem){
             return response.status(201).send(queriedItem)
