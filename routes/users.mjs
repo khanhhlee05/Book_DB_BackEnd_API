@@ -102,7 +102,7 @@ router.delete("/api/me"
 })
 
 
-// create new loan
+// Create new loan
 router.post("/api/me/loan", requireAuth, async (request, response) => {
   // Start a session for the transaction
   const session = await mongoose.startSession()
